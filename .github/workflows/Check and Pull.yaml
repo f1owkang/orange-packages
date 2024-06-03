@@ -25,7 +25,7 @@ jobs:
     - name: Install PyYAML
       run: python -m pip install pyyaml
 
-    # 第四步：执行 Python 脚本，读取 YAML 文件中的仓库信息
+    # 第四步：执行 Python 脚本，读取 YAML 文件中的仓库信息并生成 JSON 文件
     - name: Read repositories from YAML
       id: read_yaml
       run: python update.py
@@ -33,9 +33,15 @@ jobs:
     # 第五步：检查每个仓库是否有更新，并拉取更新的文件
     - name: Check and Pull Updates
       run: |
-        for repo_name in $(echo "${{ steps.read_yaml.outputs.repo_names }}"); do
-          repo_url=$(echo "${{ steps.read_yaml.outputs.${repo_name}_url }}")
-          repo_path=$(echo "${{ steps.read_yaml.outputs.${repo_name}_path }}")
+        repos=$(cat repos.json | jq -r '.[] | @base64')
+        for repo in $repos; do
+          _jq() {
+            echo ${repo} | base64 --decode | jq -r ${1}
+          }
+
+          repo_name=$(_jq '.name')
+          repo_url=$(_jq '.url')
+          repo_path=$(_jq '.path')
 
           # 克隆目标仓库到临时目录
           git clone --depth=1 ${repo_url} temp-repo
@@ -57,3 +63,12 @@ jobs:
           # 删除临时目录
           rm -rf temp-repo
         done
+
+    # 第六步：将更新后的文件提交到当前仓库
+    - name: Commit and Push Changes
+      run: |
+        git config --global user.name "github-actions[bot]"
+        git config --global user.email "github-actions[bot]@users.noreply.github.com"
+        git add .
+        git commit -m "Updated repositories files"
+        git push
