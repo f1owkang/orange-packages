@@ -1,6 +1,6 @@
 import yaml
 
-with open('feeds.yml', 'r') as f:
+with open('./feed.yaml', 'r') as f:
     data = yaml.safe_load(f)
     repos = data.get('repositories', [])
     for repo in repos:
