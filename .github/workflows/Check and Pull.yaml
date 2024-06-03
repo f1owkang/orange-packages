@@ -29,7 +29,7 @@ jobs:
     - name: Read repositories from YAML
       id: read_yaml
       run: python update.py
-
+    
     # 第五步：检查每个仓库是否有更新，并拉取更新的文件
     - name: Check and Pull Updates
       run: |
@@ -43,28 +43,18 @@ jobs:
           repo_url=$(_jq '.url')
           repo_path=$(_jq '.path')
 
-          # 克隆目标仓库到临时目录
-          git clone --depth=1 ${repo_url} temp-repo
-          
-          # 比较临时目录与目标路径下的文件差异
-          diff_output=$(diff -qr temp-repo $repo_path || true)
-          if [[ -n "$diff_output" ]]; then
-            echo "Updating $repo_url at $repo_path"
-            # 如果有差异，复制更新的文件到目标路径
-            cp -r temp-repo/* $repo_path/
-            # 配置 git 用户信息
-            git config --global user.name "github-actions[bot]"
-            git config --global user.email "github-actions[bot]@users.noreply.github.com"
-            # 添加并提交更新
-            git add $repo_path/
-            git commit -m "Update files from $repo_url"
-            git push
+          if [ ! -d "$repo_path" ]; then
+            # 如果目录不存在，则进行克隆
+            git clone --depth=1 $repo_url $repo_path
+          else
+            # 如果目录存在，则进行更新
+            cd $repo_path
+            git pull origin master
+            cd -
           fi
-          # 删除临时目录
-          rm -rf temp-repo
         done
 
-    # 第六步：将更新后的文件提交到当前仓库
+    # 第七步：将更新后的文件提交到当前仓库
     - name: Commit and Push Changes
       run: |
         git config --global user.name "github-actions[bot]"
