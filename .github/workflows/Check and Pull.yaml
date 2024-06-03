@@ -61,6 +61,8 @@ jobs:
               echo "Remote repository does not exist for $repo_url, skipping"
             fi
           fi
+          # 移除指定的文件和文件夹
+          rm -rf $repo_path/.git $repo_path/.gitattributes $repo_path/.svn $repo_path/.github $repo_path/.gitignore
         done
 
     # 第六步：删除 repos.json 文件
@@ -74,7 +76,6 @@ jobs:
       run: |
         git config --global user.name "github-actions[bot]"
         git config --global user.email "github-actions[bot]@users.noreply.github.com"
-        git submodule update --init
         git config advice.addEmbeddedRepo false
         git add .
         git commit -m "Updated repositories files"
