@@ -17,7 +17,7 @@ jobs:
 
     # 第二步：设置 Python 环境
     - name: Set up Python
-      uses: actions/setup-python@v4
+      uses: actions/setup-python@v5
       with:
         python-version: '3.x'
 
@@ -46,7 +46,7 @@ jobs:
           # 如果仓库路径不存在，则直接克隆远程仓库到本地路径
           if [ ! -d "$repo_path" ]; then
             echo "Cloning $repo_url into $repo_path"
-            git clone --depth=1 ${repo_url} $repo_path
+            git clone ${repo_url} $repo_path
           else
             # 如果仓库路径存在，则检查远程仓库是否存在
             echo "Checking if remote repository exists for $repo_url"
@@ -54,7 +54,7 @@ jobs:
               # 如果远程仓库存在，则删除本地路径并重新克隆远程仓库到本地路径
               echo "Remote repository exists for $repo_url, deleting local path and cloning again"
               rm -rf $repo_path
-              git clone --depth=1 ${repo_url} $repo_path
+              git clone ${repo_url} $repo_path
             else
               # 如果远程仓库不存在，则跳过此仓库
               echo "Remote repository does not exist for $repo_url, skipping"
