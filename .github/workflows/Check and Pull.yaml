@@ -43,18 +43,26 @@ jobs:
           repo_url=$(_jq '.url')
           repo_path=$(_jq '.path')
 
+          # 如果仓库路径不存在，则直接克隆远程仓库到本地路径
           if [ ! -d "$repo_path" ]; then
-            # 如果目录不存在，则进行克隆
-            git clone --depth=1 $repo_url $repo_path
+            echo "Cloning $repo_url into $repo_path"
+            git clone --depth=1 ${repo_url} $repo_path
           else
-            # 如果目录存在，则进行更新
-            cd $repo_path
-            git pull origin master
-            cd -
+            # 如果仓库路径存在，则检查远程仓库是否存在
+            echo "Checking if remote repository exists for $repo_url"
+            if git ls-remote --exit-code $repo_url; then
+              # 如果远程仓库存在，则删除本地路径并重新克隆远程仓库到本地路径
+              echo "Remote repository exists for $repo_url, deleting local path and cloning again"
+              rm -rf $repo_path
+              git clone --depth=1 ${repo_url} $repo_path
+            else
+              # 如果远程仓库不存在，则跳过此仓库
+              echo "Remote repository does not exist for $repo_url, skipping"
+            fi
           fi
         done
 
-    # 第七步：将更新后的文件提交到当前仓库
+    # 第六步：将更新后的文件提交到当前仓库
     - name: Commit and Push Changes
       run: |
         git config --global user.name "github-actions[bot]"
