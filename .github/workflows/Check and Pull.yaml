@@ -13,11 +13,11 @@ jobs:
     steps:
     # 第一步：签出当前仓库的代码
     - name: Checkout this repository
-      uses: actions/checkout@v2
+      uses: actions/checkout@v3
 
     # 第二步：设置 Python 环境
     - name: Set up Python
-      uses: actions/setup-python@v2
+      uses: actions/setup-python@v4
       with:
         python-version: '3.x'
 
@@ -33,9 +33,9 @@ jobs:
     # 第五步：检查每个仓库是否有更新，并拉取更新的文件
     - name: Check and Pull Updates
       run: |
-        for repo_url in $(echo ${!steps.read_yaml.outputs.*_url}); do
-          repo_name=$(echo $repo_url | sed 's/.*\.\.\.//;s/_url//')
-          repo_path=$(eval echo \${steps.read_yaml.outputs.${repo_name}_path})
+        for repo_name in $(echo "${{ steps.read_yaml.outputs.repo_names }}"); do
+          repo_url=$(echo "${{ steps.read_yaml.outputs.${repo_name}_url }}")
+          repo_path=$(echo "${{ steps.read_yaml.outputs.${repo_name}_path }}")
 
           # 克隆目标仓库到临时目录
           git clone --depth=1 ${repo_url} temp-repo
