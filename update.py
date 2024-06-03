@@ -14,7 +14,8 @@ with open('./feeds.yaml', 'r') as f:
         repos_output.append({
             "name": repo['name'],
             "url": repo['url'],
-            "path": repo['path']
+            "path": repo['path'],
+            "branch": repo['branch']
         })
 
     # 将仓库信息转换为 JSON 字符串并写入文件

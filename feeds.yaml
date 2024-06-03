@@ -2,6 +2,8 @@ repositories:
   - name: nss-packages-k6.6
     url: https://github.com/JiaY-shi/nss-packages.git
     path: nss-packages-k6.6
+    branch: k6.6
   - name: luci-app-openclash
     url: https://github.com/vernesong/OpenClash.git
     path: luci-app-openclash
+    branch: master
