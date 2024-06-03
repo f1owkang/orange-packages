@@ -1,4 +1,7 @@
 import yaml
+import os
+cwd = os.getcwd()
+print("Current working directory:", cwd)
 
 with open('./feed.yaml', 'r') as f:
     data = yaml.safe_load(f)
