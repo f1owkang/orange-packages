@@ -23,44 +23,34 @@ jobs:
 
     # 第三步：安装 PyYAML 库，用于解析 YAML 文件
     - name: Install PyYAML
-      run: |
-        python -m pip install pyyaml
+      run: python -m pip install pyyaml
 
-    # 第四步：读取 YAML 文件中的仓库信息
+    # 第四步：执行 Python 脚本，读取 YAML 文件中的仓库信息
     - name: Read repositories from YAML
       id: read_yaml
-      run: |
-        import yaml
-        with open('feeds.yml', 'r') as f:
-          data = yaml.safe_load(f)
-          repos = data.get('repositories', [])
-          for repo in repos:
-            print(f"::set-output name={repo['name']}_url::{repo['url']}")
-            print(f"::set-output name={repo['name']}_path::{repo['path']}")
+      run: python update.py
 
     # 第五步：检查每个仓库是否有更新，并拉取更新的文件
     - name: Check and Pull Updates
       run: |
-        # 遍历 YAML 文件中的每个仓库
-        for repo in $(echo ${!steps.read_yaml.outputs.*_url}); do
-          repo_url=$(echo ${repo} | sed 's/_url//') # 提取仓库的 URL
-          repo_path=$(echo ${repo} | sed 's/_url/_path/') # 提取仓库的路径
-          target_path=$(echo ${!repo_path}) # 获取目标路径
-          
+        for repo_url in $(echo ${!steps.read_yaml.outputs.*_url}); do
+          repo_name=$(echo $repo_url | sed 's/.*\.\.\.//;s/_url//')
+          repo_path=$(eval echo \${steps.read_yaml.outputs.${repo_name}_path})
+
           # 克隆目标仓库到临时目录
-          git clone --depth=1 ${!repo} temp-repo
+          git clone --depth=1 ${repo_url} temp-repo
           
           # 比较临时目录与目标路径下的文件差异
-          diff_output=$(diff -qr temp-repo $target_path || true)
+          diff_output=$(diff -qr temp-repo $repo_path || true)
           if [[ -n "$diff_output" ]]; then
-            echo "Updating $repo_url at $target_path"
+            echo "Updating $repo_url at $repo_path"
             # 如果有差异，复制更新的文件到目标路径
-            cp -r temp-repo/* $target_path/
+            cp -r temp-repo/* $repo_path/
             # 配置 git 用户信息
             git config --global user.name "github-actions[bot]"
             git config --global user.email "github-actions[bot]@users.noreply.github.com"
             # 添加并提交更新
-            git add $target_path/
+            git add $repo_path/
             git commit -m "Update files from $repo_url"
             git push
           fi
