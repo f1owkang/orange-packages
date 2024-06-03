@@ -3,7 +3,7 @@ import os
 cwd = os.getcwd()
 print("Current working directory:", cwd)
 
-with open('./feed.yaml', 'r') as f:
+with open('./feeds.yaml', 'r') as f:
     data = yaml.safe_load(f)
     repos = data.get('repositories', [])
     for repo in repos:
