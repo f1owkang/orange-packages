@@ -14,6 +14,8 @@ jobs:
     # 第一步：签出当前仓库的代码
     - name: Checkout this repository
       uses: actions/checkout@v4
+      with:
+        token: ${{ secrets.GITHUB_TOKEN }}
 
     # 第二步：设置 Python 环境
     - name: Set up Python
