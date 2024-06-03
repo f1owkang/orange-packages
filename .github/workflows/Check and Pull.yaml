@@ -62,11 +62,16 @@ jobs:
           fi
         done
 
-    # 第六步：将更新后的文件提交到当前仓库
+    # 第六步：删除 repos.json 文件
+    - name: Delete repos.json
+      run: rm repos.json
+
+    # 第七步：将更新后的文件提交到当前仓库
     - name: Commit and Push Changes
       run: |
         git config --global user.name "github-actions[bot]"
         git config --global user.email "github-actions[bot]@users.noreply.github.com"
+        git config advice.addEmbeddedRepo false
         git add .
         git commit -m "Updated repositories files"
-        git push https://x-access-token:${GH_TOKEN}@github.com/${{ github.repository }}.git HEAD:main
+        git push origin HEAD:main
